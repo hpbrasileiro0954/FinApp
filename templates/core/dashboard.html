@@ -1,0 +1,25 @@
+{% extends 'base_auth.html' %}
+{% block title %}Dashboard — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<div class="space-y-6">
+    <h2 class="text-xl font-semibold text-white">Dashboard <span class="text-gray-400 font-normal text-base">{{ current_year }}</span></h2>
+
+    <!-- Pending users (admin only) -->
+    <div id="pending-users-container">
+        {% include 'core/partials/pending_users.html' %}
+    </div>
+
+    <!-- Bar chart -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wide">Créditos e Débitos por Mês</h3>
+        <div id="chart-container">
+            {% include 'core/partials/chart.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}

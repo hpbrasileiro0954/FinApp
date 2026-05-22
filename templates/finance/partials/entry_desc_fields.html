@@ -1,0 +1,15 @@
+<div class="grid grid-cols-2 gap-3 mb-2">
+    <div>
+        <label class="block text-xs text-gray-400 mb-1">Descrição <span class="text-red-400">*</span></label>
+        <input type="text" name="ds_category" value="{{ ds_category|default:'' }}" required
+               class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-blue-500">
+        {% for error in ds_cat_errors %}
+        <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+        {% endfor %}
+    </div>
+    <div>
+        <label class="block text-xs text-gray-400 mb-1">Sub Desc.</label>
+        <input type="text" name="ds_subcategory" value="{{ ds_subcategory|default:'' }}"
+               class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-blue-500">
+    </div>
+</div>

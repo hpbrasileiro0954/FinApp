@@ -1,0 +1,33 @@
+{% if sync_success %}
+<div class="flex items-start gap-3 bg-green-900/40 border border-green-700 rounded-lg p-4 text-sm">
+    <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div class="space-y-1">
+        <p class="font-semibold text-green-300">Sincronização concluída com sucesso!</p>
+        <ul class="text-green-400 space-y-0.5">
+            <li>{{ sync_cats }} categoria{{ sync_cats|pluralize:"s" }} importada{{ sync_cats|pluralize:"s" }}</li>
+            <li>{{ sync_entries }} lançamento{{ sync_entries|pluralize:"s" }} importado{{ sync_entries|pluralize:"s" }}</li>
+            {% if sync_skipped %}
+            <li class="text-yellow-400">{{ sync_skipped }} lançamento{{ sync_skipped|pluralize:"s" }} ignorado{{ sync_skipped|pluralize:"s" }} (categoria não encontrada)</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<!-- OOB: refresh the counts section without a page reload -->
+<div id="sincronismo-counts" hx-swap-oob="true">
+    {% include 'finance/partials/sincronismo_counts.html' %}
+</div>
+
+{% else %}
+<div class="flex items-start gap-3 bg-red-900/40 border border-red-700 rounded-lg p-4 text-sm">
+    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div class="space-y-1">
+        <p class="font-semibold text-red-300">Erro durante a sincronização</p>
+        <p class="text-red-400 font-mono text-xs break-all">{{ sync_error }}</p>
+    </div>
+</div>
+{% endif %}

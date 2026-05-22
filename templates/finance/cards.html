@@ -1,0 +1,64 @@
+{% extends 'base_auth.html' %}
+{% load finance_extras %}
+{% block title %}Cartões — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<div class="space-y-4">
+    <h2 class="text-xl font-semibold text-white">Cartões / Faturas</h2>
+    <div id="cards-container">
+        {% include 'finance/partials/cards_table.html' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fmtBRL(cents) {
+    const abs = Math.abs(cents) / 100;
+    const s = abs.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return cents < 0 ? '-' + s : s;
+}
+
+function updateChecked() {
+    const centsInput = document.getElementById('cards-total-cents');
+    if (!centsInput) return;
+    const totalCents = parseInt(centsInput.value || '0', 10);
+    let sumCents = 0;
+    document.querySelectorAll('[name="card_check"]:checked').forEach(function(cb) {
+        const row = cb.closest('tr');
+        if (!row) return;
+        sumCents += parseInt(row.dataset.vlCents || '0', 10);
+    });
+    const diffCents = totalCents - sumCents;
+
+    const sumEl  = document.getElementById('cards-checked-sum');
+    const diffEl = document.getElementById('cards-diff');
+    if (sumEl) {
+        sumEl.textContent = fmtBRL(sumCents);
+        sumEl.className = 'font-mono ' + (sumCents < 0 ? 'text-red-400' : sumCents === 0 ? 'text-gray-400' : 'text-green-400');
+    }
+    if (diffEl) {
+        diffEl.textContent = fmtBRL(diffCents);
+        diffEl.className = 'font-mono ' + (diffCents < 0 ? 'text-red-400' : diffCents === 0 ? 'text-gray-400' : 'text-green-400');
+    }
+}
+
+document.addEventListener('change', function(e) {
+    if (!e.target) return;
+    if (e.target.name === 'card_check') {
+        updateChecked();
+    } else if (e.target.id === 'select-all-cards') {
+        document.querySelectorAll('[name="card_check"]').forEach(function(cb) {
+            cb.checked = e.target.checked;
+        });
+        updateChecked();
+    }
+});
+
+document.addEventListener('htmx:afterSwap', function(e) {
+    if (e.target && e.target.id === 'cards-container') {
+        updateChecked();
+    }
+});
+</script>
+{% endblock %}

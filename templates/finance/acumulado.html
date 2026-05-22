@@ -1,0 +1,11 @@
+{% extends 'base_auth.html' %}
+{% block title %}Acumulado {{ year }} — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<div class="space-y-4">
+    <h2 class="text-xl font-semibold text-white">Acumulado</h2>
+    <div id="acumulado-container">
+        {% include 'finance/partials/acumulado_table.html' %}
+    </div>
+</div>
+{% endblock %}

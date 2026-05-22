@@ -1,0 +1,23 @@
+{% if pending_users %}
+<div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-5">
+    <h3 class="text-sm font-medium text-yellow-400 uppercase tracking-wide mb-3">Aprovações Pendentes</h3>
+    <ul class="space-y-2">
+        {% for u in pending_users %}
+        <li class="flex items-center justify-between bg-gray-800 rounded-lg px-4 py-2">
+            <div>
+                <span class="text-white font-medium">{{ u.username }}</span>
+                <span class="text-gray-400 text-sm ml-2">{{ u.email }}</span>
+            </div>
+            <button
+                hx-post="{% url 'core:approve_user' u.pk %}"
+                hx-target="#pending-users-container"
+                hx-swap="innerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded-lg transition-colors">
+                Aprovar
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

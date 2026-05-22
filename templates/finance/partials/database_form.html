@@ -1,0 +1,30 @@
+<div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+     onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 w-full max-w-sm" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-semibold text-white mb-4">Alterar Data Base</h3>
+
+        <form hx-post="{% url 'finance:entries_database_edit' %}" hx-target="#modal-container" hx-swap="innerHTML">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-1">Data Base <span class="text-red-400">*</span></label>
+                <input type="date" name="value" value="{{ current_value }}" required
+                       class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                {% if error %}
+                <p class="text-red-400 text-xs mt-1">{{ error }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors">
+                    Salvar
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('modal-container').innerHTML=''"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-2 rounded-lg transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

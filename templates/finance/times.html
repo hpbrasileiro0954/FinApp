@@ -1,0 +1,154 @@
+{% extends 'base_auth.html' %}
+{% load finance_extras %}
+{% block title %}Parcelamentos — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<div class="space-y-4">
+    <h2 class="text-xl font-semibold text-white">Parcelamentos</h2>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form id="times-form" onsubmit="return false;">
+            {% csrf_token %}
+
+            <!-- Row 1: Parcelas | Cartão | Dia | Iniciar Ano | Iniciar Mês -->
+            <div class="grid grid-cols-5 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Parcelas <span class="text-red-400">*</span></label>
+                    <select name="parcelas" id="id_parcelas"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Cartão <span class="text-red-400">*</span></label>
+                    <select name="cartao" id="id_cartao" onchange="updateDia(this.value)"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                        {% for card in cards %}
+                        <option value="{{ card }}"{% if card == 'Mastercard' %} selected{% endif %}>{{ card }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Dia <span class="text-red-400">*</span></label>
+                    <input type="number" name="dia" id="id_dia" value="15" min="0" max="31" required
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Iniciar Ano <span class="text-red-400">*</span></label>
+                    <select name="iniciar_ano" id="id_iniciar_ano"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                        {% for year in years %}
+                        <option value="{{ year }}"{% if year == current_year %} selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Iniciar Mês <span class="text-red-400">*</span></label>
+                    <select name="iniciar_mes" id="id_iniciar_mes"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                        {% for num, label in months %}
+                        <option value="{{ num }}"{% if num == current_month %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 2: Categoria -->
+            <div class="mb-4">
+                <label class="block text-xs text-gray-400 mb-1">Categoria</label>
+                <select name="categoria" id="id_categoria"
+                        hx-get="{% url 'finance:times_category_hint' %}"
+                        hx-target="#times-desc-container"
+                        hx-swap="innerHTML"
+                        hx-trigger="change"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                    {% for cat in categories %}
+                    <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Row 3: Descrição -->
+            <div class="mb-4" id="times-desc-container">
+                {% include 'finance/partials/times_desc_field.html' with ds_category='' %}
+            </div>
+
+            <!-- Row 4: Valor Total | Valor Parcela | Botão Total -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Valor Total <span class="text-red-400">*</span></label>
+                    <input type="number" name="vl_total" id="id_vl_total" value="-120" step="0.01" required
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Valor Parcela</label>
+                    <input type="number" name="vl_parcela" id="id_vl_parcela" step="0.01"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="flex items-end">
+                    <button type="button" onclick="calcTotal()"
+                            class="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-2 rounded-lg transition-colors text-sm">
+                        Total
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex justify-between items-center">
+                <button type="button"
+                        hx-post="{% url 'finance:times_generate' %}"
+                        hx-include="#times-form"
+                        hx-target="#preview-container"
+                        hx-swap="innerHTML"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors text-sm">
+                    Gerar Parcela
+                </button>
+                <button type="button"
+                        hx-post="{% url 'finance:times_save' %}"
+                        hx-include="#times-form"
+                        hx-target="#save-msg"
+                        hx-swap="innerHTML"
+                        class="bg-green-700 hover:bg-green-600 text-white font-medium px-6 py-2 rounded-lg transition-colors text-sm">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Save message -->
+    <div id="save-msg"></div>
+
+    <!-- Preview table -->
+    <div id="preview-container"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const cardDays = {{ card_days_json|safe }};
+
+function updateDia(card) {
+    if (card in cardDays) {
+        document.getElementById('id_dia').value = cardDays[card];
+    }
+}
+
+function calcTotal() {
+    const parcela = parseFloat(document.getElementById('id_vl_parcela').value);
+    const n = parseInt(document.getElementById('id_parcelas').value);
+    if (!isNaN(parcela) && !isNaN(n)) {
+        document.getElementById('id_vl_total').value = (parcela * n).toFixed(2);
+    }
+}
+</script>
+{% endblock %}

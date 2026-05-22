@@ -1,0 +1,21 @@
+Tela Cartões
+  Pegar como base a tela de lançamentos
+  . Mudar "SALDO ANTERIOR:" para "TOTAL:"
+  . Remover "Data base:" e icone "Alterar data base"
+  . O valor na caixa "SALDO ANTERIOR" deve ser a soma dos registros filtrados
+  Filtro:
+    . Pegar o campo "Cartão" na tela de "Parcelamentos" 
+    . Campo "Ano"
+      - Obrigatório
+      - Eh um Dropdown (HTML select) listando valores iniciando no ano corrente até 7 anos pra frente e 7 anos pra traz
+      - Valor padrão ano corrente
+    . Campo "Mês"
+      . Obrigatório
+      . Eh um Dropdown (HTML select) listando valores iniciando no mês 1 até 12
+      . Valor padrão mês da data corrente
+  . Criar um registro na tabela "params" com "label" igual a "card_param" e o campo "value" com o valor "2026;5;Mastercard"
+  . Ao carregar a tela Cartões ler o registro em "params" com "label" igual a "card_param" e extrair dele os
+    valor para preencher os filtros, são 3 valores separados por ponto e vírgula, o primeiro é o ano, o segundo é o mês e o terceiro é o valor para o campo "Cartão"
+  . Sempre que filtrarmos o registro "label" igual a "card_param" deve ser atualizado, com os 3 valores de filtro separados por ponto e vírgula
+  . Os registros devem ser ordenados por valor, do maior para o menor
+  . Adicionar em cada registro um campo checkbox que quando clicado deve somar o valor, e mostrar a diferença com o valor na caixa de "TOTAL:"

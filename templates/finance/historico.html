@@ -1,0 +1,87 @@
+{% extends 'base_auth.html' %}
+{% block title %}Histórico — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<style>
+.htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; pointer-events: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; pointer-events: auto; }
+</style>
+
+<div class="space-y-5">
+
+    <!-- ── Cabeçalho ──────────────────────────────────────────────────────── -->
+    <div class="flex items-center justify-between gap-4">
+        <h2 class="text-xl font-semibold text-white">Histórico de Alterações</h2>
+
+        <div class="flex items-center gap-3">
+            <!-- Spinner inline -->
+            <div id="export-spinner" class="htmx-indicator flex items-center gap-2 text-amber-400 text-sm">
+                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Exportando...
+            </div>
+
+            <!-- Botão Exportar -->
+            <button id="btn-export"
+                    disabled
+                    hx-post="{% url 'finance:historico_export' %}"
+                    hx-include="[name='ids']"
+                    hx-target="#export-result"
+                    hx-swap="innerHTML"
+                    hx-indicator="#export-spinner"
+                    hx-disabled-elt="this"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500
+                           disabled:opacity-40 disabled:cursor-not-allowed
+                           text-white text-sm font-medium rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- Área de resultado da exportação -->
+    <div id="export-result"></div>
+
+    <!-- Tabela (substituída pelos filtros via HTMX) -->
+    <div id="historico-container">
+        {% include 'finance/partials/historico_table.html' %}
+    </div>
+</div>
+
+<script>
+function syncExportBtn() {
+    const count = document.querySelectorAll('input[name="ids"]:checked').length;
+    const btn = document.getElementById('btn-export');
+    if (btn) btn.disabled = count === 0;
+}
+
+function toggleSelectAll(master) {
+    document.querySelectorAll('input[name="ids"]').forEach(cb => cb.checked = master.checked);
+    syncExportBtn();
+}
+
+// Delegação de eventos — funciona mesmo após HTMX substituir o conteúdo
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'ids') {
+        syncExportBtn();
+        // Sincroniza o estado do checkbox master
+        const all     = document.querySelectorAll('input[name="ids"]');
+        const checked = document.querySelectorAll('input[name="ids"]:checked');
+        const master  = document.getElementById('chk-select-all');
+        if (master) master.checked = all.length > 0 && all.length === checked.length;
+    }
+});
+
+// Após filtro HTMX substituir a tabela, reseta o botão
+document.addEventListener('htmx:afterSwap', function(e) {
+    if (e.detail.target && e.detail.target.id === 'historico-container') {
+        syncExportBtn();
+    }
+});
+</script>
+{% endblock %}

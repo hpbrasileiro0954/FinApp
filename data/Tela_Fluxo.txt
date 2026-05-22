@@ -1,0 +1,9 @@
+Tela Fluxo
+  . Listar uma tabela com as colunas "Categoria, Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez"
+  . Agrupar os valores na tabela entries pelo ano corrente, mês e pelo campo "categories.Type" visto que a tabela "entries" esta ligada a tabela "categories", usa o campo "entries.dt_entry" como referência
+  . Pegar registros de "entries" com o campo "status" igual a 1
+  . Listar primeiramente só os valores positivos e totalizar com o nome "Créditos"
+  . Na sequencia listar os valores negativos e totalizar com o nome "Débitos"
+  . Seguir o campo "categories.ordem" para ordenar os registros em "Créditos" e "Débitos"
+  . Quando clicar no valor em determinado mês abrir modal listando os lançamentos daquele "categories.type", ano e mês
+  . Esse modal não deve abrir nos totalizadores de "Crédito" e "Débito"

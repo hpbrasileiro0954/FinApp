@@ -1,0 +1,35 @@
+{% load finance_extras %}
+<div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wide">
+                <th class="text-center px-4 py-3 w-16">Parcela</th>
+                <th class="text-left px-4 py-3 w-12">Dia</th>
+                <th class="text-left px-4 py-3">Vencimento</th>
+                <th class="text-left px-4 py-3">Cartão</th>
+                <th class="text-right px-4 py-3">Vl. Parcela</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+            {% for row in rows %}
+            <tr class="hover:bg-gray-700/40 transition-colors">
+                <td class="px-4 py-3 text-center text-gray-500">{{ row.num }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ row.vencimento|weekday_pt }}</td>
+                <td class="px-4 py-3 text-gray-300">{{ row.vencimento|date:"d/m/Y" }}</td>
+                <td class="px-4 py-3 text-gray-300">{{ row.cartao }}</td>
+                <td class="px-4 py-3 text-right font-mono {% if row.vl >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {{ row.vl|brl }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="border-t border-gray-600 bg-gray-700/30">
+                <td colspan="4" class="px-4 py-3 text-xs text-gray-400 uppercase tracking-wide">Total</td>
+                <td class="px-4 py-3 text-right font-mono font-semibold {% if vl_total >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {{ vl_total|brl }}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

@@ -1,0 +1,63 @@
+<div class="flex items-center justify-between mb-3">
+    <span class="text-xs text-gray-500">{{ selected_year }}</span>
+    {% if button_years %}
+    <div class="flex items-center gap-2">
+        {% for yr in button_years %}
+        <button hx-get="{% url 'core:dashboard_chart' %}?year={{ yr }}"
+                hx-target="#chart-container"
+                hx-swap="innerHTML"
+                class="px-3 py-1 text-xs rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors">
+            {{ yr }}
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+<canvas id="monthlyChart" class="max-h-72"></canvas>
+<script>
+(function () {
+    var labels  = {{ chart_labels|safe }};
+    var credits = {{ chart_credits|safe }};
+    var debits  = {{ chart_debits|safe }};
+
+    function initChart() {
+        if (window._monthlyChart) { window._monthlyChart.destroy(); }
+        window._monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Créditos',
+                        data: credits,
+                        backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Débitos',
+                        data: debits,
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: 'rgb(239, 68, 68)',
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#9ca3af' } } },
+                scales: {
+                    x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                    y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                },
+            },
+        });
+    }
+
+    if (typeof Chart !== 'undefined') {
+        initChart();
+    } else {
+        document.addEventListener('DOMContentLoaded', initChart);
+    }
+}());
+</script>

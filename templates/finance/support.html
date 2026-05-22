@@ -1,0 +1,131 @@
+{% extends 'base_auth.html' %}
+{% load finance_extras %}
+{% block title %}Manutenção em Lote — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<div class="space-y-4">
+    <h2 class="text-xl font-semibold text-white">Manutenção em Lote</h2>
+
+    <!-- Filter -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+        <form id="support-filter-form"
+              hx-get="{% url 'finance:support' %}"
+              hx-target="#support-table-container"
+              hx-swap="innerHTML">
+            <div class="grid grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Descrição</label>
+                    <input type="text" name="q_desc" value="{{ q_desc }}" placeholder="Buscar na descrição…"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Categoria</label>
+                    <input type="text" name="q_cat" value="{{ q_cat }}" placeholder="Buscar na categoria…"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">De</label>
+                    <input type="date" name="date_from" value="{{ date_from }}"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Até</label>
+                    <input type="date" name="date_to" value="{{ date_to }}"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+            <div class="flex items-center justify-between mt-3">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+                    Filtrar
+                </button>
+                <!-- Subtotal -->
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="text-xs text-gray-500 uppercase tracking-wide">Selecionados:</span>
+                    <span id="selected-count" class="text-gray-300 font-medium">0</span>
+                    <span class="text-gray-600">|</span>
+                    <span class="text-xs text-gray-500 uppercase tracking-wide">Total:</span>
+                    <span id="selected-total" class="font-mono font-bold text-gray-400">0,00</span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table (swapped by filter and actions) -->
+    <div id="support-table-container">
+        {% include 'finance/partials/support_table.html' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fmtBRL(val) {
+    const abs = Math.abs(val);
+    const s = abs.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return val < 0 ? '-' + s : s;
+}
+
+function updateSubtotal() {
+    let total = 0, count = 0;
+    document.querySelectorAll('[name="selected"]:checked').forEach(function(cb) {
+        count++;
+        const row = cb.closest('tr');
+        if (!row) return;
+        const vl = row.querySelector('[name^="vl_entry_"]');
+        if (!vl) return;
+        const val = parseFloat(vl.value.replace(',', '.'));
+        if (!isNaN(val)) total += val;
+    });
+    const el = document.getElementById('selected-total');
+    if (el) {
+        el.textContent = fmtBRL(total);
+        el.className = 'font-mono font-bold ' + (total < 0 ? 'text-red-400' : 'text-green-400');
+    }
+    const cel = document.getElementById('selected-count');
+    if (cel) cel.textContent = count;
+}
+
+document.addEventListener('change', function(e) {
+    if (!e.target) return;
+    const name = e.target.name || '';
+    if (e.target.id === 'select-all') {
+        document.querySelectorAll('[name="selected"]').forEach(function(cb) { cb.checked = e.target.checked; });
+        updateSubtotal();
+    } else if (name === 'selected') {
+        const all = document.querySelectorAll('[name="selected"]');
+        const chk = document.querySelectorAll('[name="selected"]:checked');
+        const sa = document.getElementById('select-all');
+        if (sa) sa.indeterminate = chk.length > 0 && chk.length < all.length;
+        if (sa) sa.checked = all.length > 0 && chk.length === all.length;
+        updateSubtotal();
+    } else if (name.startsWith('vl_entry_')) {
+        updateSubtotal();
+    }
+});
+
+document.addEventListener('htmx:beforeRequest', function(e) {
+    const elt = e.detail && e.detail.elt;
+    if (!elt || elt.id !== 'perform-btn') return;
+    const actionEl = document.getElementById('id_action');
+    if (!actionEl) return;
+    const selected = document.querySelectorAll('[name="selected"]:checked');
+    if (selected.length === 0) {
+        e.preventDefault();
+        alert('Selecione ao menos um registro.');
+        return;
+    }
+    if (actionEl.value === 'delete') {
+        if (!confirm('Confirmar exclusão de ' + selected.length + ' registro(s) selecionado(s)?')) {
+            e.preventDefault();
+        }
+    }
+});
+
+document.addEventListener('htmx:afterSwap', function(e) {
+    if (e.target && e.target.id === 'support-table-container') {
+        updateSubtotal();
+    }
+});
+</script>
+{% endblock %}

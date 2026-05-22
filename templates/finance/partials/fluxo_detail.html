@@ -1,0 +1,62 @@
+{% load finance_extras %}
+<div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+     onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-5 w-full max-w-2xl max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-base font-semibold text-white">{{ cat_type }}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">{{ month_name }} / {{ year }}</p>
+            </div>
+            <button onclick="document.getElementById('modal-container').innerHTML=''"
+                    class="text-gray-500 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Table -->
+        {% if entries %}
+        <div class="overflow-y-auto flex-1">
+            <table class="w-full text-sm whitespace-nowrap">
+                <thead class="sticky top-0 bg-gray-800">
+                    <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wide">
+                        <th class="px-3 py-2 text-left">Data</th>
+                        <th class="px-3 py-2 text-left">Descrição</th>
+                        <th class="px-3 py-2 text-left">Categoria</th>
+                        <th class="px-3 py-2 text-right">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700/50">
+                    {% for entry in entries %}
+                    <tr class="hover:bg-gray-700/40 transition-colors">
+                        <td class="px-3 py-2 text-gray-400">{{ entry.dt_entry|date:"d/m/Y" }}</td>
+                        <td class="px-3 py-2 text-white max-w-[240px] truncate">{{ entry.ds_category }}</td>
+                        <td class="px-3 py-2 text-gray-300">{{ entry.category.name }}</td>
+                        <td class="px-3 py-2 text-right font-mono {% if entry.vl_entry >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                            {{ entry.vl_entry|brl }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer total -->
+        <div class="border-t border-gray-700 mt-3 pt-3 flex items-center justify-between">
+            <span class="text-xs text-gray-500">{{ entries|length }} lançamento{{ entries|length|pluralize:"s" }}</span>
+            <span class="font-mono font-bold {% if total >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                {{ total|brl }}
+            </span>
+        </div>
+
+        {% else %}
+        <div class="text-center py-12 text-gray-500">
+            <p class="text-sm">Nenhum lançamento encontrado.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>

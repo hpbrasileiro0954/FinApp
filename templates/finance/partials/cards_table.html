@@ -1,0 +1,154 @@
+{% load finance_extras %}
+
+<div class="space-y-4">
+
+<!-- Filter -->
+<div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+    <form hx-get="{% url 'finance:cards' %}"
+          hx-target="#cards-container"
+          hx-swap="innerHTML">
+        <div class="grid grid-cols-4 gap-4 items-end">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Cartão <span class="text-red-400">*</span></label>
+                <select name="card"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                    {% for c in cards %}
+                    <option value="{{ c }}"{% if c == selected_card %} selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Ano <span class="text-red-400">*</span></label>
+                <select name="ano"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                    {% for y in years %}
+                    <option value="{{ y }}"{% if y == selected_ano %} selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Mês <span class="text-red-400">*</span></label>
+                <select name="mes"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                    {% for num, label in months %}
+                    <option value="{{ num }}"{% if num == selected_mes %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                    Filtrar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Hidden total for JS (integer cents — locale-safe) -->
+<input type="hidden" id="cards-total-cents" value="{{ total_cents }}">
+
+<!-- TOTAL card -->
+<div class="bg-gray-800 rounded-xl border border-gray-700 px-6 py-4 flex items-center justify-between">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Total</p>
+            <button hx-get="{% url 'finance:entries_create' %}?source=cards&card={{ selected_card }}&ano={{ selected_ano }}&mes={{ selected_mes }}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    title="Novo lançamento"
+                    class="text-gray-500 hover:text-green-400 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </button>
+        </div>
+        <p class="text-xs text-gray-500">{{ selected_card }} &mdash; {{ selected_mes|stringformat:"02d" }}/{{ selected_ano }}</p>
+    </div>
+    <div class="text-right space-y-1">
+        <div class="text-2xl font-bold {% if total_value >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+            {{ total_value|brl }}
+        </div>
+        <div class="flex items-center justify-end gap-3 text-xs text-gray-500">
+            <span>Selecionado: <span id="cards-checked-sum" class="font-mono text-gray-400">0,00</span></span>
+            <span class="text-gray-700">|</span>
+            <span>Diferença: <span id="cards-diff" class="font-mono text-gray-400">{{ total_value|brl }}</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- Table -->
+{% if entries %}
+<div class="bg-gray-800 rounded-xl border border-gray-700 overflow-x-auto">
+    <table class="w-full text-sm whitespace-nowrap">
+        <thead>
+            <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wide">
+                <th class="px-3 py-3 w-8">
+                    <input type="checkbox" id="select-all-cards"
+                           class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-800"
+                           title="Selecionar todos">
+                </th>
+                <th class="px-3 py-3 w-20">Ações</th>
+                <th class="px-3 py-3 w-12">Dia</th>
+                <th class="px-3 py-3 w-28">Data</th>
+                <th class="px-3 py-3">Grupo</th>
+                <th class="px-3 py-3">Descrição</th>
+                <th class="px-3 py-3">Categoria</th>
+                <th class="text-right px-3 py-3">Valor</th>
+                <th class="text-right px-3 py-3">Total</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+            {% for entry in entries %}
+            <tr class="transition-colors {% if entry.status %}hover:bg-gray-700/40{% else %}opacity-50 bg-gray-900/30 hover:opacity-70{% endif %}"
+                data-vl-cents="{{ entry.vl_cents }}">
+                <td class="px-3 py-3 text-center">
+                    <input type="checkbox" name="card_check"
+                           class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-800">
+                </td>
+                <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                        <button hx-get="{% url 'finance:entries_edit' entry.pk %}"
+                                hx-target="#modal-container" hx-swap="innerHTML"
+                                title="Editar"
+                                class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                        {% if not entry.has_facts %}
+                        <button hx-get="{% url 'finance:entries_delete' entry.pk %}"
+                                hx-target="#modal-container" hx-swap="innerHTML"
+                                title="Excluir"
+                                class="text-gray-400 hover:text-red-400 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                        {% else %}
+                        <span title="Lançamento com registros vinculados" class="text-gray-700 cursor-not-allowed">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="px-3 py-3 text-gray-500 text-xs">{{ entry.dt_entry|weekday_pt }}</td>
+                <td class="px-3 py-3 text-gray-400">{{ entry.dt_entry|date:"d/m/Y" }}</td>
+                <td class="px-3 py-3 text-gray-400 max-w-[140px] truncate">{{ entry.ds_subcategory }}</td>
+                <td class="px-3 py-3 text-white max-w-[200px] truncate">{{ entry.ds_category }}</td>
+                <td class="px-3 py-3 text-gray-300">{{ entry.category.name }}</td>
+                <td class="px-3 py-3 text-right font-mono {% if entry.vl_entry >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {{ entry.vl_entry|brl }}
+                </td>
+                <td class="px-3 py-3 text-right font-mono {% if entry.running_total >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {{ entry.running_total|brl }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center py-16 text-gray-500 bg-gray-800 rounded-xl border border-gray-700">
+    <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+    </svg>
+    <p class="text-sm">Nenhum lançamento encontrado para {{ selected_card }} em {{ selected_mes|stringformat:"02d" }}/{{ selected_ano }}.</p>
+</div>
+{% endif %}
+
+</div>{# end space-y-4 #}

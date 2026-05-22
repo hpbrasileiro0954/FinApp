@@ -1,0 +1,11 @@
+<div id="times-success-msg"
+     class="bg-green-900/40 border border-green-700 text-green-300 text-sm rounded-lg px-4 py-3"
+     _="on load wait 3s then remove me">
+    {{ count }} lançamento{{ count|pluralize }} criado{{ count|pluralize }} com sucesso.
+</div>
+<script>
+setTimeout(function() {
+    var el = document.getElementById('times-success-msg');
+    if (el) el.remove();
+}, 3000);
+</script>

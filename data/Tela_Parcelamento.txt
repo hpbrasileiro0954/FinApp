@@ -1,0 +1,66 @@
+Tela Parcelamentos (Formulário)
+Imagem de referência: times.png
+Campo "Parcelas"
+  . Obrigatório
+  . Eh um Dropdown (HTML select) listando valores de 2 a 12 parcelas
+  . Valor padrão 2
+Campo "Cartões"
+  . Obrigatório
+  . Eh um Dropdown (HTML select) listando as strings "Mastercard", "Visa", "Hering", "Crédito" e "Débito" 
+  . Valor padrão "Mastercard"
+  . Ao selecionar a string "Mastecard" mover para o campo "Dia" o valor 15
+  . Ao selecionar a string "Visa" mover para o campo "Dia" o valor 8
+  . Ao selecionar a string "Crédito" mover para o campo "Dia" o valor 0
+  . Ao selecionar a string "Débito" mover para o campo "Dia" o valor 0
+Campo "Dia"
+  . Obrigatório
+  . Entrada simples aceitar apenas valor numérico
+  . Valor padrão 15
+Campo "Iniciar Ano"
+  . Obrigatório
+  . Eh um Dropdown (HTML select) listando valores iniciando no ano atual até 10 anos pra frente
+    Exemplo: Se ano atual 2026, mostra valores para selecionar até 2036
+  . Valor padrão ano corrente
+Campo "Iniciar Mês"
+  . Obrigatório
+  . Eh um Dropdown (HTML select) listando valores iniciando no mês 1 até 12
+  . Valor padrão mês da data atual
+Campo "Categoria" 
+  . Eh um dropdown (HTML select) listando todas as categorias em ordem alfabética
+  . Valor padrão primeira categoria da lista
+  . Ao selecionar uma categoria, buscar o último registro com essa categoria, e preencher o campo "Descrição"
+Campo "Descrição"
+  . Obrigatório
+  . Campo text simples (HTML input)
+Campo "Valor Total"
+  . Obrigatório
+  . Deve aceitar somente números com duas casas decimáis
+  . Permitir o sinal de "-" menos para indicar números negativos
+  . Valor padrão -120
+Campo "Valor Parcela"
+  . Deve aceitar somente números com duas casas decimáis
+  . Permitir o sinal de "-" menos para indicar números negativos
+Botão "Total"
+  . Ao clicar nele, pegar o valor informado no campo "Valor Parcela" e multiplicar este valor pelo número de parcelas, e colocar o valor calculado no campo "Valor Total"
+Botão "Gerar Parcela"
+  . Ao clicar neste botão, pegar os valores do campos da tela e gerar uma tabela
+  . Colunas
+    - "Parcela" (iniciar sempre com 1 e seguir até a quantidade de parcelas selecionada)
+    - "Vencimento" (Montar data para cada parcela utilizando "Iniciar Ano", "Iniciar Mês", "Dia")
+    - Incrementar o mês em cada parcela, se o calculo chegar no mês 12 e ainda tiver parcelas para 
+      listar, incrementar o ano em 1 para a proxima linha
+  . Cartão - mostrar a string selecionar em "Cartões"
+  . Vl. Parcela - Pegar o conteúdo em "Valor Total" e dividir pelo "Valor Parcela"
+  . Mostra o total da Soma de "Valor Parcela", se apresentar diferença do campo "Valor Total",
+    distribuir os centavos nas últimas parcelas, garantindo que o valor total das parcelas bata exatamente com o "Valor Total"
+Botão "Save Changes"
+  . Ao clicar gravar registros na tabela "entries" para cada parcela, no final permanecer na mesma tela e mostrar mensagem que X registros foram criados, esse mensagem deve desaparecer sozinha, em 3 segundos.
+  . Onde: 
+    - "entries.category_id" vai receber o categoria selecionada
+    - "entries.dt_entry" vai receber a data "Vencimento"
+    - "entries.ds_subcategory" vai receber a string selecionada no campo "Cartões"
+    - "entries.vl_entry" vai receber o campo calculado de cada "Vl. Parcela" incluindo os centavos ajustados nas últimas parcelas (a soma do valores de parcela tem que bater com o "Valor Total")
+    - "entries.ds_category" vai receber o valor no campo "Descrição", a string no campo "Descrição" devemos concatenar outra string no seguinte formato exemplo "(X de Y)", onde:
+      . X é o numero da parcela
+      . Y é o número total de parcelas
+      . lembrar de colocar um espaço entre a string no campo "Descrição" e a string montada.

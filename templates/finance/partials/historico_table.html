@@ -1,0 +1,126 @@
+<!-- Filtros por ação -->
+<div class="flex gap-2 flex-wrap mb-4">
+    <button hx-get="{% url 'finance:historico' %}"
+            hx-target="#historico-container" hx-swap="innerHTML" hx-push-url="false"
+            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                   {% if not action_filter %}bg-blue-600 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700{% endif %}">
+        Todos <span class="ml-1 opacity-75">({{ audit_counts.insert|add:audit_counts.update|add:audit_counts.delete }})</span>
+    </button>
+    <button hx-get="{% url 'finance:historico' %}?action=INSERT"
+            hx-target="#historico-container" hx-swap="innerHTML" hx-push-url="false"
+            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                   {% if action_filter == 'INSERT' %}bg-green-700 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700{% endif %}">
+        Criados <span class="ml-1 opacity-75">({{ audit_counts.insert }})</span>
+    </button>
+    <button hx-get="{% url 'finance:historico' %}?action=UPDATE"
+            hx-target="#historico-container" hx-swap="innerHTML" hx-push-url="false"
+            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                   {% if action_filter == 'UPDATE' %}bg-yellow-600 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700{% endif %}">
+        Alterados <span class="ml-1 opacity-75">({{ audit_counts.update }})</span>
+    </button>
+    <button hx-get="{% url 'finance:historico' %}?action=DELETE"
+            hx-target="#historico-container" hx-swap="innerHTML" hx-push-url="false"
+            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                   {% if action_filter == 'DELETE' %}bg-red-700 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700{% endif %}">
+        Removidos <span class="ml-1 opacity-75">({{ audit_counts.delete }})</span>
+    </button>
+</div>
+
+<!-- Tabela -->
+<div class="overflow-x-auto rounded-lg border border-gray-700">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-800 text-gray-400 text-xs uppercase tracking-wide">
+            <tr>
+                <!-- Checkbox select-all -->
+                <th class="px-3 py-3 w-10">
+                    <input type="checkbox" id="chk-select-all"
+                           onchange="toggleSelectAll(this)"
+                           class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500
+                                  focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                </th>
+                <th class="px-3 py-3 w-16 text-center">Ações</th>
+                <th class="px-4 py-3 text-left">Data / Hora</th>
+                <th class="px-4 py-3 text-left">Tabela</th>
+                <th class="px-4 py-3 text-center">ID Reg.</th>
+                <th class="px-4 py-3 text-center">Ação</th>
+                <th class="px-4 py-3 text-left">Usuário</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+            {% for log in audit_logs %}
+            <tr id="log-row-{{ log.pk }}"
+                class="transition-colors {% if log.export_warning %}bg-yellow-900/10 hover:bg-yellow-900/20 border-l-2 border-yellow-500{% else %}bg-gray-900 hover:bg-gray-800{% endif %}">
+
+                <!-- Checkbox da linha -->
+                <td class="px-3 py-2 text-center">
+                    <input type="checkbox" name="ids" value="{{ log.pk }}"
+                           class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500
+                                  focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                </td>
+
+                <!-- Ícones: warning + detalhe + remover -->
+                <td class="px-3 py-2">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if log.export_warning %}
+                        <span title="{{ log.export_warning_msg }}" class="text-yellow-400 cursor-help flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            </svg>
+                        </span>
+                        {% endif %}
+                        <button hx-get="{% url 'finance:historico_detail' log.pk %}"
+                                hx-target="#modal-container" hx-swap="innerHTML"
+                                title="Ver detalhes"
+                                class="text-gray-500 hover:text-blue-400 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </button>
+                        <button hx-post="{% url 'finance:historico_log_delete' log.pk %}"
+                                hx-target="#log-row-{{ log.pk }}"
+                                hx-swap="delete"
+                                hx-confirm="Remover este registro do histórico?"
+                                title="Remover"
+                                class="text-gray-500 hover:text-red-400 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+
+                <td class="px-4 py-2 {% if log.export_warning %}text-yellow-200/70{% else %}text-gray-400{% endif %} whitespace-nowrap">{{ log.changed_at|date:"d/m/Y H:i:s" }}</td>
+                <td class="px-4 py-2 {% if log.export_warning %}text-yellow-200/70{% else %}text-gray-300{% endif %} font-mono text-xs">{{ log.table_name }}</td>
+                <td class="px-4 py-2 text-center {% if log.export_warning %}text-yellow-200/70{% else %}text-gray-400{% endif %}">{{ log.record_id }}</td>
+                <td class="px-4 py-2 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        {% if log.action == 'INSERT' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-300 border border-green-700">Criado</span>
+                        {% elif log.action == 'UPDATE' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-900 text-yellow-300 border border-yellow-700">Alterado</span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-300 border border-red-700">Removido</span>
+                        {% endif %}
+                        {% if log.export_warning %}
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-800 text-yellow-300 border border-yellow-600">
+                            ⚠ pendente
+                        </span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="px-4 py-2 {% if log.export_warning %}text-yellow-200/70{% else %}text-gray-400{% endif %}">{{ log.changed_by.username|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-4 py-10 text-center text-gray-500">Nenhuma alteração registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if audit_logs %}
+<p class="text-xs text-gray-500 mt-2 text-right">Exibindo os últimos 200 registros.</p>
+{% endif %}

@@ -1,0 +1,42 @@
+<div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+     onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 w-full max-w-md" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-semibold text-white mb-5">{{ title }}</h3>
+        <form hx-post="{{ action }}" hx-target="#modal-container" hx-swap="innerHTML">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-4 {% if field.field.widget.input_type == 'checkbox' %}flex items-center gap-3{% endif %}">
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    {{ field }}
+                    <label class="text-sm text-gray-300 cursor-pointer" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% else %}
+                    <label class="block text-sm text-gray-400 mb-1">
+                        {{ field.label }}{% if field.field.required %}<span class="text-red-400 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                {% endif %}
+                {% for error in field.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% if form.instance.pk %}
+            <div class="mb-4 flex items-center gap-2">
+                <span class="text-xs text-gray-600">MySQL ID:</span>
+                <span class="text-xs text-gray-600">{{ form.instance.mysql_id }}</span>
+            </div>
+            {% endif %}
+            <div class="flex gap-3 mt-6">
+                <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors">
+                    Salvar
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('modal-container').innerHTML=''"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-2 rounded-lg transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

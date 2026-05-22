@@ -1,0 +1,116 @@
+{% load finance_extras %}
+<div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+    onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-4 w-full max-w-xl max-h-[90vh] overflow-y-auto"
+        onclick="event.stopPropagation()">
+        <h3 class="text-base font-semibold text-white mb-3">{{ title }}</h3>
+
+        <form hx-post="{{ action }}" hx-target="#modal-container" hx-swap="innerHTML">
+            {% csrf_token %}
+            {% if source %}
+            <input type="hidden" name="source" value="{{ source }}">
+            <input type="hidden" name="filter_card" value="{{ filter_card }}">
+            <input type="hidden" name="filter_ano" value="{{ filter_ano }}">
+            <input type="hidden" name="filter_mes" value="{{ filter_mes }}">
+            {% endif %}
+
+            <!-- Category -->
+            <div class="mb-2">
+                <label class="block text-xs text-gray-400 mb-1">Categoria <span class="text-red-400">*</span></label>
+                {{ form.category }}
+                {% for error in form.category.errors %}
+                <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Description and Sub Desc (HTMX target for autocomplete) -->
+            <div id="desc-fields">
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Descrição <span
+                                class="text-red-400">*</span></label>
+                        {{ form.ds_category }}
+                        {% for error in form.ds_category.errors %}
+                        <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Sub Desc.</label>
+                        {{ form.ds_subcategory }}
+                        {% for error in form.ds_subcategory.errors %}
+                        <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="mb-2">
+                <label class="block text-xs text-gray-400 mb-1">Detalhes</label>
+                {{ form.details }}
+                {% for error in form.details.errors %}
+                <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Date and Value -->
+            <div class="grid grid-cols-2 gap-3 mb-2">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Data <span class="text-red-400">*</span></label>
+                    {{ form.dt_entry }}
+                    {% for error in form.dt_entry.errors %}
+                    <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Valor <span class="text-red-400">*</span></label>
+                    {{ form.vl_entry }}
+                    {% for error in form.vl_entry.errors %}
+                    <p class="text-red-400 text-xs mt-0.5">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Flags -->
+            <div class="flex items-center gap-5 mb-3 px-3 py-2 bg-gray-700/40 rounded-lg">
+                <div class="flex items-center gap-2">
+                    {{ form.status }}
+                    <label class="text-sm text-gray-300 cursor-pointer select-none"
+                        for="{{ form.status.id_for_label }}">Status</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    {{ form.checked }}
+                    <label class="text-sm text-gray-300 cursor-pointer select-none"
+                        for="{{ form.checked.id_for_label }}">Verificado</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    {{ form.fixed }}
+                    <label class="text-sm text-gray-300 cursor-pointer select-none"
+                        for="{{ form.fixed.id_for_label }}">Fixo</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    {{ form.published }}
+                    <label class="text-sm text-gray-300 cursor-pointer select-none"
+                        for="{{ form.published.id_for_label }}">Publicado</label>
+                </div>
+            </div>
+
+            {% if form.instance.pk %}
+            <div class="mb-2 flex items-center gap-2">
+                <span class="text-xs text-gray-600">MySQL ID:</span>
+                <span class="text-xs text-gray-600">{{ form.instance.mysql_id }}</span>
+            </div>
+            {% endif %}
+            <div class="flex gap-3">
+                <button type="submit"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 rounded-lg transition-colors text-sm">
+                    Salvar
+                </button>
+                <button type="button" onclick="document.getElementById('modal-container').innerHTML=''"
+                    class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-1.5 rounded-lg transition-colors text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

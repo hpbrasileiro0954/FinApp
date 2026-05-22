@@ -1,0 +1,8 @@
+asgiref==3.11.1
+Django==5.2.14
+django-htmx==1.27.0
+PyMySQL==1.1.1
+python-dotenv==1.0.1
+sqlparse==0.5.5
+typing_extensions==4.15.0
+tzdata==2026.2

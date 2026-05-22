@@ -1,0 +1,11 @@
+Tela Acumulado
+  . Listar uma tabela com as colunas "Categoria, Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez"
+  . Teremos 4 linhas de dados nessa tabela, e na coluna "Categoria" devemos ter os valores "Acumulado, Crédito, Débito, Resumo"
+  . Do ano corrente, na célula "Acumulado" com "Jan", somar todos os registros de entries.vl_entry antes do primeiro dia do ano corrente
+  . Na célula "Crédito" com "Jan" somar todos os registros com valores positivos em entries.vl_entry, do ano corrente mês de janeiro
+  . Na célula "Débito" com "Jan" somar todos os registros com valores negativos em entries.vl_entry, do ano corrente mês de janeiro
+  . Na célula "Resumo" com "Jan" somar "Acumulado", "Crédito" e "Débito" de "Jan"
+  . Para o mês de "Fev" do ano corrente, o valor total de "Resumo" obtido em "Jan", vai para a célula "Acumulado" com "Fev"
+  . O valor total de "Crédito", "Débito" e "Resumo" devem seguir a mesma dinâmica para os meses seguintes
+  . Sempre pegar registros de "entries" com o campo "status" igual a 1
+  . Finalmente, utilizar o mesmo filtro da Tela de "Fluxo" para ver dados de anos diferentes

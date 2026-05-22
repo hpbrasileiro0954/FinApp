@@ -1,0 +1,7 @@
+Tela de Sincronismo
+  - Mostrar tabela 
+    . com a contagem de registros por ano das tabelas, categories e entries 
+  - Mostrar tabela com as alterações realizadas nas tabelas "categories" e "entries"
+    . Listar oque foi criado
+    . Listar oque foi alterado
+    . Listar oque foi removido

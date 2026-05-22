@@ -1,0 +1,105 @@
+{% load finance_extras %}
+<form id="support-action-form" onsubmit="return false;">
+    {% csrf_token %}
+    <input type="hidden" name="q_desc" value="{{ q_desc }}">
+    <input type="hidden" name="q_cat" value="{{ q_cat }}">
+    <input type="hidden" name="date_from" value="{{ date_from }}">
+    <input type="hidden" name="date_to" value="{{ date_to }}">
+
+    {% if message %}
+    <div id="support-action-msg"
+         class="mb-3 px-4 py-2 rounded-lg text-sm border {% if message_type == 'yellow' %}bg-yellow-900/40 border-yellow-700 text-yellow-300{% else %}bg-green-900/40 border-green-700 text-green-300{% endif %}">
+        {{ message }}
+    </div>
+    <script>setTimeout(function(){ var m=document.getElementById('support-action-msg'); if(m) m.remove(); }, 3000);</script>
+    {% endif %}
+
+    {% if entries %}
+    <!-- Action controls -->
+    <div class="flex items-center gap-3 mb-3">
+        <select name="action" id="id_action"
+                class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            <option value="update">Update</option>
+            <option value="delete">Delete</option>
+            <option value="copy">Copy</option>
+        </select>
+        <button type="button" id="perform-btn"
+                hx-post="{% url 'finance:support_action' %}"
+                hx-include="#support-action-form"
+                hx-target="#support-table-container"
+                hx-swap="innerHTML"
+                class="bg-orange-700 hover:bg-orange-600 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+            Perform Action
+        </button>
+        <span class="text-xs text-gray-500">{{ entries|length }} registro(s) encontrado(s)</span>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-x-auto">
+        <table class="w-full text-sm whitespace-nowrap">
+            <thead>
+                <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wide">
+                    <th class="px-3 py-3 w-8">
+                        <input type="checkbox" id="select-all"
+                               class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-800"
+                               title="Selecionar todos">
+                    </th>
+                    <th class="text-left px-3 py-3">Data</th>
+                    <th class="text-left px-3 py-3">Grupo</th>
+                    <th class="text-left px-3 py-3">Descrição</th>
+                    <th class="text-left px-3 py-3">Categoria</th>
+                    <th class="text-right px-3 py-3">Valor</th>
+                    <th class="text-center px-3 py-3 w-16">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+                {% for entry in entries %}
+                <tr class="transition-colors {% if entry.status %}hover:bg-gray-700/30{% else %}opacity-60 hover:opacity-80{% endif %}">
+                    <td class="px-3 py-2 text-center">
+                        <input type="checkbox" name="selected" value="{{ entry.pk }}"
+                               class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-800">
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="date" name="dt_entry_{{ entry.pk }}" value="{{ entry.dt_entry|date:'Y-m-d' }}"
+                               class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blue-500 w-32">
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="text" name="ds_subcategory_{{ entry.pk }}" value="{{ entry.ds_subcategory }}"
+                               class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blue-500 w-28">
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="text" name="ds_category_{{ entry.pk }}" value="{{ entry.ds_category }}"
+                               class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blue-500 w-48">
+                    </td>
+                    <td class="px-3 py-2">
+                        <select name="category_{{ entry.pk }}"
+                                class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blue-500 w-36">
+                            {% for cat in categories %}
+                            <option value="{{ cat.pk }}"{% if cat.pk == entry.category_id %} selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="text" inputmode="decimal" name="vl_entry_{{ entry.pk }}" value="{{ entry.vl_entry }}"
+                               class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-right font-mono text-xs focus:outline-none focus:border-blue-500 w-28 {% if entry.vl_entry >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                        <input type="checkbox" name="status_{{ entry.pk }}" value="1"
+                               {% if entry.status %}checked{% endif %}
+                               class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-800">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="text-center py-16 text-gray-500 bg-gray-800 rounded-xl border border-gray-700">
+        <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="text-sm">Nenhum lançamento encontrado para o período.</p>
+    </div>
+    {% endif %}
+</form>

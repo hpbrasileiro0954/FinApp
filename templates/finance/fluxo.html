@@ -1,0 +1,12 @@
+{% extends 'base_auth.html' %}
+{% load finance_extras %}
+{% block title %}Fluxo {{ year }} — Controle Financeiro{% endblock %}
+
+{% block page_content %}
+<div class="space-y-4">
+    <h2 class="text-xl font-semibold text-white">Fluxo</h2>
+    <div id="fluxo-container">
+        {% include 'finance/partials/fluxo_table.html' %}
+    </div>
+</div>
+{% endblock %}

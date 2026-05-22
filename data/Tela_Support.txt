@@ -1,0 +1,22 @@
+Tela Support (Formulário)
+Imagem de referência: support.png
+Filtrar os registros em "entries" por "entries.ds_category", "category.name" e "entries.dt_entry" com um intervalo de data (sugerir a semana da data corrente)
+Listar os registros "entries" a partir dos filtros
+  - Mostrar um checkbox que se marcado liga o checkbox de todos os registros filtrados
+    se desmarcar esse checkbox, desmarca o checkbox de todos os registros filtrados
+  - Colunas
+    . checkbox para marcar ou desmarcar o registros
+    . data (entries.dt_entry formato dd/mm/yyyy)
+    . grupo (entries.ds_subcategory)
+    . descrição (entries.ds_category)
+    . categoria (categories.name)
+    . valor (entries.vl_entry)
+    . status (entries.status)
+  - Permitir editar todos os campos na listagem
+  - Campo Dropbox com as opções "Update", "Delete" e "Copy"
+  - Botão "Perform Action"
+    . Os registros com checkbox ligado, devem passar por uma das ações definidas "Update", "Delete" ou "Copy"
+    . Ação "Update", vai alterar os registros "entries" selecionados com os dados alterados
+    . Ação "Delete", vai deletar os registros "entries" selecionados, perguntar antes de deletar
+    . Ação "Copy", vai copiar os registros "entries" selecionados
+  - Mostrar um campo na tela, que quando um registro for selecionado, deve somar os lançamentos selecionados e mostrar o total nesse campo.

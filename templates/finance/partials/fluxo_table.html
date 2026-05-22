@@ -1,0 +1,104 @@
+{% load finance_extras %}
+
+<!-- Year selector -->
+<div class="flex items-center justify-between mb-3">
+    <span class="text-sm font-semibold text-white">{{ year }}</span>
+    {% if button_years %}
+    <div class="flex items-center gap-2">
+        {% for yr in button_years %}
+        <button hx-get="{% url 'finance:fluxo' %}?year={{ yr }}"
+                hx-target="#fluxo-container"
+                hx-swap="innerHTML"
+                class="px-3 py-1 text-xs rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors">
+            {{ yr }}
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Table -->
+<div class="bg-gray-800 rounded-xl border border-gray-700 overflow-x-auto">
+    <table class="w-full text-sm whitespace-nowrap">
+        <thead>
+            <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wide">
+                <th class="px-4 py-3 text-left min-w-[140px]">Categoria</th>
+                {% for label in month_labels %}
+                <th class="px-3 py-3 text-right">{{ label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+
+            {# ── Créditos ── #}
+            {% for row in credits %}
+            <tr class="border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors">
+                <td class="px-4 py-2 text-gray-300">{{ row.label }}</td>
+                {% for val in row.values %}
+                {% if val is not None %}
+                <td class="px-3 py-2 text-right font-mono cursor-pointer hover:bg-blue-900/30 transition-colors rounded"
+                    hx-get="{% url 'finance:fluxo_detail' %}?type={{ row.type|urlencode }}&year={{ year }}&month={{ forloop.counter }}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML">
+                    <span class="{% if val >= 0 %}text-green-400{% else %}text-red-400{% endif %}">{{ val|brl }}</span>
+                </td>
+                {% else %}
+                <td class="px-3 py-2 text-right text-gray-700 text-xs">—</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr class="border-t border-gray-700/50">
+                <td class="px-4 py-2 text-gray-600 text-xs italic" colspan="13">Nenhum crédito no período.</td>
+            </tr>
+            {% endfor %}
+
+            {# Totalizador Créditos #}
+            <tr class="border-t-2 border-emerald-700/60 bg-emerald-900/20">
+                <td class="px-4 py-2.5 font-bold text-green-300 text-xs uppercase tracking-widest">Créditos</td>
+                {% for tot in credit_totals %}
+                <td class="px-3 py-2.5 text-right font-mono font-bold {% if tot %}{% if tot >= 0 %}text-green-300{% else %}text-red-400{% endif %}{% else %}text-gray-600{% endif %}">
+                    {% if tot %}{{ tot|brl }}{% else %}—{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+
+            {# Separador visual #}
+            <tr class="h-4 bg-gray-900/60"><td colspan="13"></td></tr>
+
+            {# ── Débitos ── #}
+            {% for row in debits %}
+            <tr class="border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors">
+                <td class="px-4 py-2 text-gray-300">{{ row.label }}</td>
+                {% for val in row.values %}
+                {% if val is not None %}
+                <td class="px-3 py-2 text-right font-mono cursor-pointer hover:bg-blue-900/30 transition-colors rounded"
+                    hx-get="{% url 'finance:fluxo_detail' %}?type={{ row.type|urlencode }}&year={{ year }}&month={{ forloop.counter }}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML">
+                    <span class="{% if val >= 0 %}text-green-400{% else %}text-red-400{% endif %}">{{ val|brl }}</span>
+                </td>
+                {% else %}
+                <td class="px-3 py-2 text-right text-gray-700 text-xs">—</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr class="border-t border-gray-700/50">
+                <td class="px-4 py-2 text-gray-600 text-xs italic" colspan="13">Nenhum débito no período.</td>
+            </tr>
+            {% endfor %}
+
+            {# Totalizador Débitos #}
+            <tr class="border-t-2 border-red-700/60 bg-red-900/20">
+                <td class="px-4 py-2.5 font-bold text-red-300 text-xs uppercase tracking-widest">Débitos</td>
+                {% for tot in debit_totals %}
+                <td class="px-3 py-2.5 text-right font-mono font-bold {% if tot %}{% if tot >= 0 %}text-green-400{% else %}text-red-300{% endif %}{% else %}text-gray-600{% endif %}">
+                    {% if tot %}{{ tot|brl }}{% else %}—{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+
+        </tbody>
+    </table>
+</div>

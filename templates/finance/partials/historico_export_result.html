@@ -1,0 +1,76 @@
+{% load finance_extras %}
+{% if export_success %}
+<div class="flex items-start gap-3 bg-green-900/40 border border-green-700 rounded-lg p-4 text-sm">
+    <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div class="space-y-0.5">
+        <p class="font-semibold text-green-300">Exportação concluída com sucesso!</p>
+        <p class="text-green-400">{{ export_ok }} registro{{ export_ok|pluralize:"s" }} exportado{{ export_ok|pluralize:"s" }} para o MySQL.</p>
+        {% if export_skipped %}
+        <p class="text-yellow-400">{{ export_skipped }} ignorado{{ export_skipped|pluralize:"s" }} — sem <code>mysql_id</code> vinculado.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% else %}
+
+{% if export_error %}
+<div class="flex items-start gap-3 bg-red-900/40 border border-red-700 rounded-lg p-4 text-sm">
+    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div>
+        <p class="font-semibold text-red-300">Erro na exportação</p>
+        <p class="text-red-400">{{ export_error }}</p>
+    </div>
+</div>
+
+{% else %}
+<div class="flex items-start gap-3 bg-yellow-900/30 border border-yellow-700 rounded-lg p-4 text-sm">
+    <svg class="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    </svg>
+    <div class="space-y-1">
+        <p class="font-semibold text-yellow-300">Exportação concluída com erros</p>
+        {% if export_ok %}
+        <p class="text-green-400">{{ export_ok }} exportado{{ export_ok|pluralize:"s" }} com sucesso.</p>
+        {% endif %}
+        {% if export_skipped %}
+        <p class="text-gray-400">{{ export_skipped }} ignorado{{ export_skipped|pluralize:"s" }} — sem <code>mysql_id</code>.</p>
+        {% endif %}
+        {% if export_errors %}
+        <div class="mt-2 space-y-1">
+            {% for err in export_errors %}
+            <p class="text-red-400 font-mono text-xs">{{ err }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+<script>
+(function () {
+    var el = document.getElementById('export-result');
+    if (!el) return;
+    setTimeout(function () {
+        el.style.transition = 'opacity 0.5s ease';
+        el.style.opacity = '0';
+    }, 3500);
+    setTimeout(function () {
+        el.innerHTML = '';
+        el.style.opacity = '';
+        el.style.transition = '';
+    }, 4000);
+})();
+</script>
+
+<!-- OOB: atualiza a tabela removendo os registros exportados com sucesso -->
+{% if export_ok %}
+<div id="historico-container" hx-swap-oob="true">
+    {% include 'finance/partials/historico_table.html' %}
+</div>
+{% endif %}
