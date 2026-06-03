@@ -100,5 +100,51 @@ function toggleSidebar() {
     sidebar.classList.toggle('w-16', !collapsed);
     labels.forEach(el => el.classList.toggle('hidden', !collapsed));
 }
+
+// Substitui o confirm() nativo do hx-confirm por modal customizada
+document.addEventListener('htmx:confirm', function (evt) {
+    const elt = evt.detail.elt;
+    const message = evt.detail.question
+        || (elt && elt.getAttribute('hx-confirm'))
+        || (elt && elt.closest('[hx-confirm]') && elt.closest('[hx-confirm]').getAttribute('hx-confirm'));
+
+    if (!message) return; // sem hx-confirm — deixa o HTMX seguir normalmente
+
+    evt.preventDefault();
+    const container = document.getElementById('modal-container');
+
+    window._htmxPendingConfirm = function () {
+        container.innerHTML = '';
+        evt.detail.issueRequest(true);
+        delete window._htmxPendingConfirm;
+    };
+
+    container.innerHTML = `
+        <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+             onclick="if(event.target===this){document.getElementById('modal-container').innerHTML='';delete window._htmxPendingConfirm;}">
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 w-full max-w-sm" onclick="event.stopPropagation()">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-900/50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-white">Confirmação</h3>
+                </div>
+                <p class="text-sm text-gray-300 mb-6">${message}</p>
+                <div class="flex gap-3">
+                    <button onclick="window._htmxPendingConfirm && window._htmxPendingConfirm()"
+                            class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold text-sm py-2 rounded-lg transition-colors">
+                        Confirmar
+                    </button>
+                    <button onclick="document.getElementById('modal-container').innerHTML=''; delete window._htmxPendingConfirm;"
+                            class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium text-sm py-2 rounded-lg transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>`;
+});
 </script>
 {% endblock %}

@@ -188,6 +188,14 @@ def _get_data_base():
         return datetime.date.today()
 
 
+def _get_paginar():
+    try:
+        param = Param.objects.get(label__iexact='paginar')
+        return param.value.strip()
+    except Param.DoesNotExist:
+        return '1'
+
+
 def _get_saldo_anterior(data_base):
     result = Entry.objects.filter(
         status=True, dt_entry__lte=data_base, is_deleted=False
@@ -224,7 +232,10 @@ def _entries_ctx(request):
         e.running_total = (saldo_anterior + e.cumulative) if e.status else None
         e.has_facts = e.pk in ids_with_facts
 
-    ctx = _paginate(entries_all, request)
+    if _get_paginar() == '0':
+        ctx = {'object_list': entries_all, 'page_obj': None, 'paginator': None, 'per_page': 'all'}
+    else:
+        ctx = _paginate(entries_all, request)
     ctx.update({'saldo_anterior': saldo_anterior, 'data_base': data_base})
     # rename key to match template
     ctx['entries'] = ctx.pop('object_list')
