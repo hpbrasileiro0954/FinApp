@@ -5,6 +5,7 @@
     <input type="hidden" name="q_cat" value="{{ q_cat }}">
     <input type="hidden" name="date_from" value="{{ date_from }}">
     <input type="hidden" name="date_to" value="{{ date_to }}">
+    <input type="hidden" name="last15" value="{{ last15|yesno:'1,' }}">
 
     {% if message %}
     <div id="support-action-msg"

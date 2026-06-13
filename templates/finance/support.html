@@ -12,7 +12,7 @@
               hx-get="{% url 'finance:support' %}"
               hx-target="#support-table-container"
               hx-swap="innerHTML">
-            <div class="grid grid-cols-4 gap-4 items-end">
+            <div class="grid grid-cols-5 gap-4 items-end">
                 <div>
                     <label class="block text-xs text-gray-400 mb-1">Descrição</label>
                     <input type="text" name="q_desc" value="{{ q_desc }}" placeholder="Buscar na descrição…"
@@ -23,15 +23,23 @@
                     <input type="text" name="q_cat" value="{{ q_cat }}" placeholder="Buscar na categoria…"
                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
                 </div>
-                <div>
+                <div id="date_from_group" class="{% if last15 %}opacity-40{% endif %}">
                     <label class="block text-xs text-gray-400 mb-1">De</label>
                     <input type="date" name="date_from" value="{{ date_from }}"
                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
                 </div>
-                <div>
+                <div id="date_to_group" class="{% if last15 %}opacity-40{% endif %}">
                     <label class="block text-xs text-gray-400 mb-1">Até</label>
                     <input type="date" name="date_to" value="{{ date_to }}"
                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 text-xs text-gray-400 mb-1 cursor-pointer select-none">
+                        <input type="checkbox" name="last15" value="1" {% if last15 %}checked{% endif %}
+                               onchange="document.getElementById('date_from_group').classList.toggle('opacity-40', this.checked); document.getElementById('date_to_group').classList.toggle('opacity-40', this.checked);"
+                               class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-800">
+                        Últimos 15 registros (ignora datas)
+                    </label>
                 </div>
             </div>
             <div class="flex items-center justify-between mt-3">

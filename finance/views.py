@@ -478,6 +478,7 @@ def _support_filter_ctx(params):
 
     q_desc = params.get('q_desc', '').strip()
     q_cat = params.get('q_cat', '').strip()
+    last15 = params.get('last15') in ('1', 'on', 'true', 'True')
     date_from_str = params.get('date_from', week_start.isoformat())
     date_to_str = params.get('date_to', week_end.isoformat())
 
@@ -490,22 +491,26 @@ def _support_filter_ctx(params):
     except (ValueError, TypeError):
         dt_end = week_end
 
-    qs = (
-        Entry.objects
-        .filter(is_deleted=False, dt_entry__gte=df, dt_entry__lte=dt_end)
-        .select_related('category')
-        .order_by('dt_entry', 'id')
-    )
+    qs = Entry.objects.filter(is_deleted=False).select_related('category')
+    if not last15:
+        qs = qs.filter(dt_entry__gte=df, dt_entry__lte=dt_end)
     if q_desc:
         qs = qs.filter(ds_category__icontains=q_desc)
     if q_cat:
         qs = qs.filter(category__name__icontains=q_cat)
 
+    if last15:
+        entries = list(qs.order_by('-id')[:15])
+        entries.reverse()
+    else:
+        entries = list(qs.order_by('dt_entry', 'id'))
+
     return {
-        'entries': list(qs),
+        'entries': entries,
         'categories': list(Category.objects.filter(is_deleted=False).order_by('name')),
         'q_desc': q_desc,
         'q_cat': q_cat,
+        'last15': last15,
         'date_from': df.isoformat(),
         'date_to': dt_end.isoformat(),
     }
